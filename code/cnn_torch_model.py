@@ -56,7 +56,6 @@ class CNN_model(nn.Module):
             self.convs.append((l_conv, l_pool))
         self.hidden = nn.Linear(in_features=self._final_in_shape, out_features=self.hidden_dims)
         self.dropout2 = nn.Dropout(p = 0.5)
-        self.out_layer = nn.Linear(in_features=self.hidden_dims, out_features=self.output_dim)
 
 
     def add_data(self, X_trn, Y_trn):
@@ -66,6 +65,7 @@ class CNN_model(nn.Module):
         self.X_trn = X_trn
         self.Y_trn = Y_trn
         self.output_dim = Y_trn.shape[1]
+        self.out_layer = nn.Linear(in_features=self.hidden_dims, out_features=self.output_dim)
 
     def add_pretrain(self, vocabulary, vocabulary_inv):
         print ('model_variaton:', self.model_variation)
@@ -86,7 +86,7 @@ class CNN_model(nn.Module):
 
     def forward(self, X):
         X = self.embedding(X)
-        X = X.unsqueeze(1)
+        # X = X.unsqueeze(1)
         X = self.dropout1(X)
         X = [pool(torch.relu(conv(X))) for (conv, pool) in self.convs]
         if len(self.filter_sizes)>1:
