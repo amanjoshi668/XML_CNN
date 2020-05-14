@@ -4,7 +4,7 @@ import numpy as np
 import timeit
 
 import data_helpers
-from cnn_model import CNN_model
+from cnn_torch_model import CNN_model
 
 
 def load_data(args):
@@ -46,7 +46,7 @@ def main(args):
 
     model.add_data(X_trn, Y_trn)
     model.add_pretrain(vocabulary, vocabulary_inv)
-    model.build_train()
+    # model.build_train()
     print('Process time %.3f (secs)\n' % (timeit.default_timer() - start_time))
 
     # Training model

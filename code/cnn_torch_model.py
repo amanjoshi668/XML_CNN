@@ -7,7 +7,10 @@ from w2v import load_word2vec
 
 import torch
 from torch import nn
-
+def out_size(l_in, kernel_size, padding=0, dilation=1, stride=1):
+    a = l_in + 2*padding - dilation*(kernel_size - 1) - 1
+    b = int(a/stride)
+    return b + 1
 class CNN_model(nn.Module):
     def __init__(self, args):
         # Model Hyperparameters
@@ -39,19 +42,23 @@ class CNN_model(nn.Module):
         elif self.model_variation != 'random':
             raise NotImplementedError('Unknown model_variation')
         self.dropout1 = nn.Dropout(p = 0.25)
+        self._final_in_shape = 0
         self.convs = []
         for fsz in self.filter_sizes:
             l_conv = nn.Conv1d(in_channels = self.embedding_dim, out_channels=self.num_filters, kernel_size=fsz, stride=2)
-            # pool_size = l_conv_shape[-1] // self.pooling_units
+            l_out_size = out_size(self.embedding_dim, fsz, stride=2)
+            pool_size = l_out_size // self.pooling_units
             if self.pooling_type == 'average':
-                l_pool = nn.AdaptiveAvgPool1d(self.dynamic_pool_length)
+                l_pool = nn.AvgPool1d(pool_size, stride=None, count_include_pad=True)
+                pool_out_size = (int((l_out_size - pool_size)/pool_size) + 1)*self.num_filters
             elif self.pooling_type == 'max':
-                l_pool = nn.AdaptiveMaxPool1d(self.dynamic_pool_length)
+                l_pool = nn.MaxPool1d(2, stride=1)
+                pool_out_size = (int(l_out_size*self..num_filters - 2) + 1)
             else:
                 raise NotImplementedError('Unknown pooling layer')
+            self._final_in_shape += pool_out_size
             self.convs.append((l_conv, l_pool))
-        self.__in_shape = self.filter_sizes * self.num_filters * self.dynamic_pool_length
-        self.hidden = nn.Linear(in_features=self.__in_shape, out_features=self.hidden_dims)
+        self.hidden = nn.Linear(in_features=self._final_in_shape, out_features=self.hidden_dims)
         self.dropout2 = nn.Dropout(p = 0.5)
         self.out_layer = nn.Linear(in_features=self.hidden_dims, out_features=self.output_dim)
 
@@ -80,8 +87,12 @@ class CNN_model(nn.Module):
         X = X.unsqueeze(1)
         X = self.dropout1(X)
         X = [pool(torch.relu(conv(X))) for (conv, pool) in self.convs]
+        if len(self.filter_sizes)>1:
+            o = torch.cat(conv_out,1)
+        else:
+            o = conv_out[0]
         X = torch.cat(X, 1)
-        X = toch.relu(self.hidden(X.view(-1, self.__in_shape)))
+        X = toch.relu(self.hidden(X.view(-1, self._final_in_shape)))
         X = self.dropout2(X)
         X = torch.sigmoid(self.output_dim(X))
         return X
