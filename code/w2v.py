@@ -82,10 +82,10 @@ def load_word2vec(model_type, vocabulary_inv, num_features=300):
         for line in open(model_name, 'r'):
             tmp = line.strip().split()
             word, vec = tmp[0], map(float, tmp[1:])
-            assert(len(vec) == num_features)
+            assert(len(list(vec)) == num_features)
             if word not in embedding_model:
                 embedding_model[word] = vec
-        assert(len(embedding_model) == 400000)
+        assert(len(list(embedding_model)) == 400000)
 
     else:
         raise ValueError('Unknown pretrain model type: %s!' % (model_type))
