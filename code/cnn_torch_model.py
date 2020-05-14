@@ -14,6 +14,7 @@ def out_size(l_in, kernel_size, padding=0, dilation=1, stride=1):
 class CNN_model(nn.Module):
     def __init__(self, args):
         # Model Hyperparameters
+        super(CNN_model, self).__init__()
         self.sequence_length = args.sequence_length
         self.embedding_dim = args.embedding_dim
         self.filter_sizes = args.filter_sizes
