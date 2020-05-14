@@ -1,5 +1,5 @@
 import os
-import cPickle
+import pickle
 import random
 import numpy as np
 import scipy.sparse as sp
@@ -198,7 +198,7 @@ class CNN_model(object):
         model_path = os.path.join(self.model_file, 'iter-%d' % (epoch))
         fout = open(model_path, 'wb')
         params = lasagne.layers.get_all_param_values(self.network)
-        cPickle.dump(params, fout, cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(params, fout, pickle.HIGHEST_PROTOCOL)
         fout.close()
 
     def load_params(self, epoch):
@@ -207,7 +207,7 @@ class CNN_model(object):
         assert(os.path.isdir(self.model_file))
         model_path = os.path.join(self.model_file, 'iter-%d' % (epoch))
         fin = open(model_path, 'rb')
-        params = cPickle.load(fin)
+        params = pickle.load(fin)
         lasagne.layers.set_all_param_values(self.network, params)
         fin.close()
 

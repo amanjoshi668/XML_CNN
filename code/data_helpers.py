@@ -3,7 +3,7 @@ import os
 import re
 import itertools
 import scipy.sparse as sp
-import cPickle as pickle
+import pickle
 from collections import Counter
 from nltk.corpus import stopwords
 

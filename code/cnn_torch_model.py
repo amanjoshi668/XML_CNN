@@ -1,5 +1,5 @@
 import os
-import cPickle
+import pickle
 import random
 import numpy as np
 import scipy.parse as sp
