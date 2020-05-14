@@ -67,6 +67,7 @@ def load_word2vec(model_type, vocabulary_inv, num_features=300):
     if model_type == 'GoogleNews':
         model_name = join(model_dir, 'GoogleNews-vectors-negative300.bin.gz')
         assert(num_features == 300)
+        print(model_name)
         assert(exists(model_name))
         print('Loading existing Word2Vec model (GoogleNews-300)')
         embedding_model = word2vec.Word2Vec.load_word2vec_format(model_name, binary=True)
