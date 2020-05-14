@@ -42,7 +42,7 @@ class CNN_model(nn.Module):
         self.convs = []
         for fsz in self.filter_sizes:
             l_conv = nn.Conv1d(in_channels = self.embedding_dim, out_channels=self.num_filters, kernel_size=fsz, stride=2)
-            l_out_size = out_size(self.embedding_dim, fsz, stride=2)
+            l_out_size = out_size(self.sequence_length, fsz, stride=2)
             pool_size = l_out_size // self.pooling_units
             if self.pooling_type == 'average':
                 l_pool = nn.AvgPool1d(pool_size, stride=None, count_include_pad=True)
@@ -89,13 +89,16 @@ class CNN_model(nn.Module):
         X = self.embedding(X)
         # X = X.unsqueeze(1)
         X = self.dropout1(X)
+        X = X.permute(0,2,1)
+        print("Shape after Embedding: ", X.shape)
         X = [pool(torch.relu(conv(X))) for (conv, pool) in self.convs]
+        X = [x.view(x.shape[0],-1) for x in X]
         if len(self.filter_sizes)>1:
             X = torch.cat(X,1)
         else:
             X = X[0]
         # X = torch.cat(X, 1)
-        X = toch.relu(self.hidden(X.view(-1, self._final_in_shape)))
+        X = torch.relu(self.hidden(X))#.view(-1, self._final_in_shape)))
         X = self.dropout2(X)
         X = torch.sigmoid(self.output_dim(X))
         return X
@@ -106,7 +109,7 @@ class CNN_model(nn.Module):
         #nr_batches = nr_trn_num // self.batch_size
         self.train()
         criterion = nn.BCELoss
-        optimizer = torch.optim.Adam(self.parameters, lr = lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr = lr)
         trn_loss = []
         for batch_idx in np.random.permutation(range(nr_batches)):
             start_idx = batch_idx * self.batch_size
