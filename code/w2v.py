@@ -81,7 +81,7 @@ def load_word2vec(model_type, vocabulary_inv, num_features=300):
         embedding_model = {}
         for line in open(model_name, 'r'):
             tmp = line.strip().split()
-            word, vec = tmp[0], map(float, tmp[1:])
+            word, vec = tmp[0], np.array(tmp[1:]).astype(np.float)
             assert(len(list(vec)) == num_features)
             if word not in embedding_model:
                 embedding_model[word] = vec
