@@ -36,11 +36,6 @@ class CNN_model(nn.Module):
         # self.rng = torch.shared_randomstreams.RandomStreams(seed=1126)
 
         # Model
-        self.embedding = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.embedding_dim)
-        if self.model_variation == "pretrain":
-            self.embedding.load_state_dict({'weight': self.embedding_weights})
-        elif self.model_variation != 'random':
-            raise NotImplementedError('Unknown model_variation')
         self.dropout1 = nn.Dropout(p = 0.25)
         self._final_in_shape = 0
         self.convs = []
@@ -82,16 +77,22 @@ class CNN_model(nn.Module):
         self.embedding_weights = embedding_weights
         self.vocab_size = len(vocabulary)
 
+        self.embedding = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.embedding_dim)
+        if self.model_variation == "pretrain":
+            self.embedding.load_state_dict({'weight': self.embedding_weights})
+        elif self.model_variation != 'random':
+            raise NotImplementedError('Unknown model_variation')
+
     def forward(self, X):
         X = self.embedding(X)
         X = X.unsqueeze(1)
         X = self.dropout1(X)
         X = [pool(torch.relu(conv(X))) for (conv, pool) in self.convs]
         if len(self.filter_sizes)>1:
-            o = torch.cat(conv_out,1)
+            X = torch.cat(X,1)
         else:
-            o = conv_out[0]
-        X = torch.cat(X, 1)
+            X = X[0]
+        # X = torch.cat(X, 1)
         X = toch.relu(self.hidden(X.view(-1, self._final_in_shape)))
         X = self.dropout2(X)
         X = torch.sigmoid(self.output_dim(X))
