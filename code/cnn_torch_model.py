@@ -53,7 +53,7 @@ class CNN_model(nn.Module):
                 pool_out_size = (int((l_out_size - pool_size)/pool_size) + 1)*self.num_filters
             elif self.pooling_type == 'max':
                 l_pool = nn.MaxPool1d(2, stride=1)
-                pool_out_size = (int(l_out_size*self..num_filters - 2) + 1)
+                pool_out_size = (int(l_out_size*self.num_filters - 2) + 1)
             else:
                 raise NotImplementedError('Unknown pooling layer')
             self._final_in_shape += pool_out_size
