@@ -80,7 +80,8 @@ class CNN_model(nn.Module):
 
         self.embedding = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.embedding_dim)
         if self.model_variation == "pretrain":
-            self.embedding.load_state_dict({'weight': self.embedding_weights})
+            self.embedding.weight.data.copy_(torch.from_numpy(embedding_weights))
+            self.embedding.weight.requires_grad=False
         elif self.model_variation != 'random':
             raise NotImplementedError('Unknown model_variation')
 
@@ -111,7 +112,7 @@ class CNN_model(nn.Module):
             start_idx = batch_idx * self.batch_size
             end_idx = min((batch_idx + 1) * self.batch_size, nr_trn_num)
             #end_idx = (batch_idx + 1) * self.batch_size
-            X = self.X_trn[start_idx:end_idx]
+            X = torch.from_numpy(self.X_trn[start_idx:end_idx]).type(torch.LongTensor)
             Y = self.Y_trn[start_idx:end_idx].toarray()
             Y_pred = self.forward(X)
             loss = criterion(Y_pred, Y)
@@ -130,7 +131,7 @@ class CNN_model(nn.Module):
         for batch_idx in range(nr_batches):
             start_idx = batch_idx * batch_size
             end_idx = min((batch_idx + 1) * batch_size, nr_tst_num)
-            Y_pred = self.forward(X_tst[start_idx:end_idx])
+            Y_pred = self.forward(torch.from_numpy(X_tst[start_idx:end_idx]).type(torch.LongTensor))
             #X_pred[start_idx:end_idx, :] = X_hidden
             for i in range(Y_pred.shape[0]):
                 sorted_idx = np.argpartition(-Y_pred[i, :], top_k)[:top_k]
