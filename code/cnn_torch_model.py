@@ -2,7 +2,7 @@ import os
 import pickle
 import random
 import numpy as np
-import scipy.parse as sp
+import scipy.sparse as sp
 from w2v import load_word2vec
 
 import torch
